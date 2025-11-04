@@ -1,0 +1,15 @@
+-- Day2
+Practises:
+1. Find all patients who are older than 60 years.
+Select name, age from Patients where age > 60;
+
+2. Retrieve all staff members who work in the 'Emergency' service.
+select distinct(staff_name) from Staff_schedule where service= 'emergency';
+
+3. List all weeks where more than 100 patients requested admission in any service
+select distinct(week) from services_weekly where patients_request > 100;
+
+
+Challenges:
+4. Find all patients admitted to 'Surgery' service with a satisfaction score below 70, showing their patient_id, name, age, and satisfaction score.
+select patient_id,name, age,satisfaction, service from patients where satisfaction < 70 and service = "surgery";
