@@ -1,0 +1,15 @@
+ -- Day 5
+ -- Count the total number of patients in the hospital.
+ Select count(name) as Number_of_patients from patients;
+ 
+ -- Calculate the average satisfaction score of all patients.
+ select avg(satisfaction) as Avg_Satisfaction from patients;
+ 
+ -- Find the minimum and maximum age of patients.
+ Select max(age), min(age) from patients;
+
+
+Daily Challenge
+ -- Calculate the total number of patients admitted, total patients refused, 
+ -- and the average patient satisfaction across all services and weeks. Round the average satisfaction to 2 decimal places.)
+ Select sum(patients_admitted), sum(patients_refused), round(avg(patient_satisfaction), 2) as Avg_Pat_Satisfaction from services_weekly;
