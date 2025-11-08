@@ -1,0 +1,16 @@
+
+ -- Day 6
+ -- Count the number of patients by each service.
+ Select service,count(name) from Patients group by service;
+ 
+ -- Calculate the average age of patients grouped by service.
+ Select service,avg(age) as Average_Age from Patients group by service;
+ 
+ -- Find the total number of staff members per role.
+ select role,count(Staff_name) as Total_Staff_members from Staff group by role;
+
+
+ -- Daily Challenge
+ -- (For each hospital service, calculate the total number of patients admitted, total patients refused, and the admission rate
+ -- (percentage of requests that were admitted). Order by admission rate descending.)
+ Select service, sum(patients_admitted), sum(patients_refused), (sum(patients_admitted)*100)/sum(patients_request) as Admission_Rate from Services_weekly group by service order by admission_Rate desc;
