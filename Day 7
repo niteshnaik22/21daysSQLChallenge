@@ -1,0 +1,14 @@
+ -- Day 7
+
+ -- Find services that have admitted more than 500 patients in total.
+ select service, sum(patients_admitted) as Total_Pat_Admted from services_weekly group by service having Total_Pat_Admted > 500;
+ 
+ -- Show services where average patient satisfaction is below 75.
+ select service, avg(patient_satisfaction) from services_weekly group by service having avg(patient_satisfaction) < 75;
+
+-- List weeks where total staff presence across all services was less than 50.
+select week, count(Present) from staff_schedule where present= 1 group by week having count(Present) < 50 ;
+
+-- (Identify services that refused more than 100 patients in total and had an average patient satisfaction below 80.
+-- Show service name, total refused, and average satisfaction)
+select Service, sum(patients_refused), round(avg(patient_satisfaction),1) as Avg_Pat_Satisfaction from services_weekly group by service having sum(patients_refused)> 100 and Avg_Pat_Satisfaction <80;
