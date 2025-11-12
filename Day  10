@@ -1,1 +1,26 @@
+-- Day 10
+-- Categorise patients as 'High', 'Medium', or 'Low' satisfaction based on their scores
+Select name, Satisfaction, case when satisfaction > 80 then "High" when satisfaction > 60 then "Medium" else "low" end as Satisfaction_Mood from Patients;
 
+-- Label staff roles as 'Medical' or 'Support' based on role type.
+select staff_name, role,  case when role = "Doctor" then "medical" else "Support" end as Staff_Roles from Staff;
+
+-- Create age groups for patients (0-18, 19-40, 41-65, 65+).
+select name, age, case when age between 0 and 18 then "Child" when age between 19 and 40 then "adult" when age between 41 and 65 then "Senior" else "Super Senior" end as Age_Category from Patients;
+
+-- (Create a service performance report showing service name, total patients admitted, and a performance category based on the following:
+'Excellent' if avg satisfaction >= 85, 'Good' if >= 75, 'Fair' if >= 65, otherwise 'Needs Improvement'. Order by average satisfaction descending.)
+
+SELECT 
+  Service,
+  Sum(Patients_admitted) AS TotalPatientsAdmitted,
+  ROUND(AVG(Patient_Satisfaction), 2) AS AvgSatisfaction,
+  CASE 
+    WHEN AVG(Patient_Satisfaction) >= 85 THEN 'Excellent'
+    WHEN AVG(Patient_Satisfaction) >= 75 THEN 'Good'
+    WHEN AVG(Patient_Satisfaction) >= 65 THEN 'Fair'
+    ELSE 'Needs Improvement'
+  END AS PerformanceCategory
+FROM services_weekly
+GROUP BY Service
+ORDER BY AvgSatisfaction DESC;
