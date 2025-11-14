@@ -1,0 +1,27 @@
+-- Day 12
+-- Find all weeks in services_weekly where no special event occurred.
+Select week, event from services_weekly where event is null;
+
+-- Count how many records have null or empty event values.
+Select Count(*) from services_weekly where event is null and event = " ";
+
+-- List all services that had at least one week with a special event.
+SELECT service, Count(week) as event_week
+FROM services_weekly
+where event IS NOT NULL 
+GROUP BY service
+ORDER BY event_week DESC;
+
+-- (Analyze the event impact by comparing weeks with events vs weeks without events. Show: event status ('With Event' or 'No Event'), 
+-- count of weeks, average patient satisfaction, and average staff morale. Order by average patient satisfaction descending.)
+SELECT
+  CASE
+    WHEN event IS NOT NULL AND event in ("fLU","DONATION", "STRIKE") THEN 'With Event'
+    ELSE 'No Event'
+  END AS event_status,
+  COUNT(*) AS weeks_count,
+  AVG(Patient_sATISFACTION),
+  aVG(sTAFF_MORALE)
+FROM services_weekly
+GROUP BY event_status
+ORDER BY AVG(Patient_sATISFACTION) DESC;
