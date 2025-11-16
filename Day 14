@@ -1,0 +1,19 @@
+-- Day 14
+-- Show all staff members and their schedule information (including those with no schedule entries)
+select * from staff S left join Staff_schedule SS on S.staff_id=ss.staff_id;
+
+-- List all services from services_weekly and their corresponding staff (show services even if no staff assigned).
+select SW.service, S.staff_name from services_weekly SW left join staff S on SW.service=s.service;
+
+-- Display all patients and their service's weekly statistics (if available).
+Select P.name, SW.* from patients P left join services_weekly SW on P.service= SW.service;
+
+-- Daily Challenge
+-- (Create a staff utilisation report showing all staff members (staff_id, staff_name, role, service) and the count of weeks they were present
+-- (from staff_schedule).Include staff members even if they have no schedule records. Order by weeks present descending.)
+
+SELECT S.staff_id,S.staff_name,S.role,S.service,
+COUNT(CASE WHEN SS.present = 1 THEN SS.week END) AS weeks_present
+FROM Staff S LEFT JOIN Staff_Schedule SS ON S.staff_id = SS.staff_id
+GROUP BY S.staff_id, S.staff_name, S.role, S.service
+ORDER BY weeks_present DESC;
