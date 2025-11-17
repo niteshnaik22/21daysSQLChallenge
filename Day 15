@@ -1,5 +1,6 @@
 -- Day 15
 -- Join patients, staff, and staff_schedule to show patient service and staff availability.
+
 SELECT 
     p.patient_id,
     p.name,
@@ -19,8 +20,28 @@ left JOIN staff_schedule ss
 ORDER BY p.patient_id, s.staff_id;
 
 -- Combine services_weekly with staff and staff_schedule for comprehensive service analysis.
+
 Select * from services_weekly SW left join staff s on sw.service=s.service left join staff_schedule SS on s.staff_id=SS.staff_id;
 
 -- Create a multi-table report showing patient admissions with staff information.
+
 select p.patient_id, P.name, P.arrival_date, P.departure_Date, S.service, S.staff_name, S.staff_id from patients P left join staff S on p.service=s.service;
 
+-- Daily Challenge
+-- (Create a comprehensive service analysis report for week 20 showing: service name, total patients admitted that week, total patients refused,
+-- average patient satisfaction, count of staff assigned to service, and count of staff present that week. Order by patients admitted descending.)
+
+Select 
+    sw.service,
+    sw.week,
+    sUM(sw.patients_admitted) TOTAL_PATIENTS_ADMITTED,
+    SUM(sw.patients_refused) TOTAL_PATIENTS_REFUSED,
+    aVG(SW.PATIENT_SATISFACTION) aVG_PATIENTS_SATISFACTION,
+    COUNT(DISTINCT s.staff_id) AS total_staff,
+    Count(case when ss.present=1 then 1 else 0 end) staff_present
+FROM services_weekly sw
+LEFT JOIN staff s ON sw.service = s.service
+LEFT JOIN staff_schedule ss
+    ON s.staff_id = ss.staff_id
+    AND sw.week = ss.week
+WHERE sw.week = 20 GROUP BY sw.service, sw.week ORDER BY tOTAL_PATIENTS_ADMITTED DESC;
