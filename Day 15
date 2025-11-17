@@ -1,1 +1,26 @@
+-- Day 15
+-- Join patients, staff, and staff_schedule to show patient service and staff availability.
+SELECT 
+    p.patient_id,
+    p.name,
+    p.service AS patient_service,
+    s.staff_id,
+    s.staff_name,
+    s.service AS staff_service,
+    CASE 
+        WHEN ss.present = 1 THEN 'Available'
+        ELSE 'Not Available'
+    END AS staff_availability
+FROM patients p
+left JOIN staff s 
+    ON p.service = s.service
+left JOIN staff_schedule ss 
+    ON s.staff_id = ss.staff_id
+ORDER BY p.patient_id, s.staff_id;
+
+-- Combine services_weekly with staff and staff_schedule for comprehensive service analysis.
+Select * from services_weekly SW left join staff s on sw.service=s.service left join staff_schedule SS on s.staff_id=SS.staff_id;
+
+-- Create a multi-table report showing patient admissions with staff information.
+select p.patient_id, P.name, P.arrival_date, P.departure_Date, S.service, S.staff_name, S.staff_id from patients P left join staff S on p.service=s.service;
 
