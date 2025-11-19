@@ -1,0 +1,72 @@
+Create database IDC_Pizza;
+
+USE idc_pizza;
+
+
+-- List all unique pizza categories 
+Select distinct(category) from pizza_types;
+
+-- Display pizza_type_id, name, and ingredients, replacing NULL ingredients with "Missing Data". Show first 5 rows.
+Select pizza_type_id, name, coalesce(ingredients,"missing data") as Ingredients from pizza_types limit 5;
+
+-- Check for pizzas missing a price (IS NULL).
+Select Pizza_id,price from Pizzas where price is null;
+
+-- Orders placed on '2015-01-01'
+Select * from Orders where date="2015-01-01";
+
+-- List pizzas with price descending.
+Select * from pizzas order by price desc; 
+
+-- Pizzas sold in sizes 'L' or 'XL'.
+Select * from pizzas where size in ("l","xl");
+
+-- Pizzas priced between $15.00 and $17.00.
+Select * from pizzas where price between 15 and 17;
+
+-- Pizzas with "Chicken" in the name.
+Select * from Pizza_types where name like  "%chicken%";
+
+-- Orders on '2015-02-15' or placed after 8 PM.
+Select * from orders where date ="2015-02-15" or time > "20:00:00";
+
+-- Total quantity of pizzas sold
+Select sum(quantity) total_quantity from order_details;
+
+-- Average pizza price.
+select round(avg(price),2) from pizzas;
+
+-- Total order value per order. (Sum(Total order value)/total orders
+
+SELECT o.order_id, SUM(od.quantity * p.price) AS total_order_value FROM orders o JOIN order_details od 
+ON o.order_id = od.order_id JOIN pizzas p ON od.pizza_id = p.pizza_id GROUP BY o.order_id ORDER BY o.order_id;
+
+-- Total quantity sold per pizza category
+select Pt.category, sum(od.quantity) total_qty_sold from order_details od JOIN pizzas p ON od.pizza_id = p.pizza_id 
+join pizza_types pt ON p.pizza_type_id = pt.pizza_type_id GROUP BY pt.category;
+
+-- Categories with more than 5,000 pizzas sold 
+select Pt.category, sum(od.quantity) total_qty_sold from order_details od JOIN pizzas p ON od.pizza_id = p.pizza_id 
+join pizza_types pt ON p.pizza_type_id = pt.pizza_type_id GROUP BY pt.category having total_qty_sold > 5000;
+
+-- Pizzas never ordered
+SELECT p.pizza_id, pt.name AS pizza_name, pt.category, p.size, p.price
+FROM pizzas p JOIN pizza_types pt ON p.pizza_type_id = pt.pizza_type_id
+WHERE p.pizza_id NOT IN ( SELECT DISTINCT pizza_id FROM order_details);
+select distinct(size) from pizzas;
+
+-- Price differences between different sizes of the same pizza 
+SELECT 
+    pt.name AS pizza_name,
+    p1.size AS size1,
+    p1.price AS price1,
+    p2.size AS size2,
+    p2.price AS price2,
+    p1.price - p2.price AS price_difference
+FROM pizzas p1
+JOIN pizzas p2 
+    ON p1.pizza_type_id = p2.pizza_type_id
+   AND p1.size < p2.size   
+JOIN pizza_types pt 
+    ON p1.pizza_type_id = pt.pizza_type_id
+ORDER BY pt.name, size1, size2;
