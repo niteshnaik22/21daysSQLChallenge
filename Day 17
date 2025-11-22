@@ -1,0 +1,27 @@
+-- Day 17
+-- Show each patient with their service's average satisfaction as an additional column.
+SELECT p.patient_id, p.name, p.service, p.satisfaction AS personal_satisfaction, svc.avg_service_satisfaction
+FROM patients p JOIN (SELECT service, AVG(patient_satisfaction) AS avg_service_satisfaction
+FROM services_weekly GROUP BY service) svc ON p.service = svc.service ORDER BY p.service, p.patient_id;
+
+-- Create a derived table of service statistics and query from it.
+SELECT p.name Patient_Name,p.service,p.satisfaction AS personal_satisfaction,stats.total_admitted,stats.total_refused,stats.avg_satisfaction
+FROM patients p JOIN (SELECT service, SUM(patients_admitted) AS total_admitted, SUM(patients_refused) AS total_refused, AVG(patient_satisfaction) AS avg_satisfaction
+FROM services_weekly GROUP BY service) stats ON p.service = stats.service ORDER BY p.service, p.patient_id;
+
+-- Display staff with their service's total patient count as a calculated field.
+SELECT s.staff_id, s.staff_name, s.role, s.service, svc.total_patients FROM staff s
+JOIN (SELECT service,COUNT(patient_id) AS total_patients FROM patients GROUP BY service) svc
+ON s.service = svc.service ORDER BY s.service, s.staff_name;
+
+-- Daily Challenge
+-- (Create a report showing each service with: service name, total patients admitted, the difference between their total admissions and
+-- the average admissions across all services, and a rank indicator ('Above Average', 'Average', 'Below Average'). Order by total patients admitted descending.)
+
+SELECT sw.service, SUM(sw.patients_admitted) AS total_admitted, SUM(sw.patients_admitted) - (SELECT AVG(total_admitted) 
+FROM (SELECT SUM(patients_admitted) AS total_admitted FROM services_weekly GROUP BY service) AS svc_avg) AS diff_from_avg,
+CASE WHEN SUM(sw.patients_admitted) > (SELECT AVG(total_admitted) 
+FROM (SELECT SUM(patients_admitted) AS total_admitted FROM services_weekly GROUP BY service) AS svc_avg) THEN 'Above Average'
+WHEN SUM(sw.patients_admitted) = (SELECT AVG(total_admitted) FROM (SELECT SUM(patients_admitted) AS total_admitted
+FROM services_weekly GROUP BY service) AS svc_avg) THEN 'Average' ELSE 'Below Average' END AS rank_indicator
+FROM services_weekly sw GROUP BY sw.service ORDER BY total_admitted DESC;
