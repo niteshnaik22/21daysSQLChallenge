@@ -1,0 +1,24 @@
+-- Day 19
+-- Rank patients by satisfaction score within each service.
+SELECT  patient_id, name, service, satisfaction,
+RANK() OVER (PARTITION BY service ORDER BY satisfaction DESC) AS satisfaction_rank
+FROM patients ORDER BY service, satisfaction_rank;
+
+-- Assign row numbers to staff ordered by their name.
+SELECT staff_id, staff_name, service,
+ROW_NUMBER() OVER (ORDER BY staff_name ASC) AS row_num
+FROM staff  ORDER BY staff_name;
+
+-- Rank services by total patients admitted.
+SELECT service, SUM(patients_admitted) AS total_admitted,
+RANK() OVER (ORDER BY SUM(patients_admitted) DESC) AS service_rank
+FROM services_weekly GROUP BY service ORDER BY service_rank;
+
+-- Daily Challenge
+-- For each service, rank the weeks by patient satisfaction score (highest first).Show service, week, patient_satisfaction, patients_admitted, and the rank. 
+Include only the top 3 weeks per service.
+
+SELECT service, week, patient_satisfaction, patients_admitted, satisfaction_rank
+FROM (SELECT sw.service, sw.week, sw.patient_satisfaction, sw.patients_admitted,
+ROW_NUMBER() OVER (PARTITION BY sw.service ORDER BY sw.patient_satisfaction DESC) AS satisfaction_rank
+FROM services_weekly sw) ranked WHERE satisfaction_rank <= 3 ORDER BY service, satisfaction_rank, week;
