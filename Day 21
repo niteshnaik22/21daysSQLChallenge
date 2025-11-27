@@ -1,0 +1,98 @@
+-- Day 21
+-- Create a CTE to calculate service statistics, then query from it.
+WITH service_stats AS (
+    SELECT sw.service, COUNT(*) AS weeks_count, SUM(sw.patients_admitted) AS total_admissions, AVG(sw.patients_admitted) AS avg_admissions,
+           AVG(sw.patient_satisfaction) AS avg_satisfaction, SUM(sw.patients_refused) AS total_refusals
+    FROM services_weekly sw GROUP BY sw.service)
+SELECT ss.service, ss.weeks_count, ss.total_admissions, ss.avg_admissions, ss.avg_satisfaction, ss.total_refusals
+	FROM service_stats ss ORDER BY ss.total_admissions DESC;
+    
+-- Use multiple CTEs to break down a complex query into logical steps.
+WITH
+patient_metrics AS (
+    SELECT
+        service,
+        COUNT(*) AS total_patients,
+        AVG(age) AS avg_age,
+        AVG(satisfaction) AS avg_satisfaction
+    FROM patients
+    GROUP BY service
+),
+staff_metrics AS (
+    SELECT
+        service,
+        COUNT(*) AS total_staff
+    FROM staff
+    GROUP BY service
+),
+weekly_metrics AS (
+    SELECT
+        service,
+        SUM(patients_admitted) AS total_admitted,
+        SUM(patients_refused) AS total_refused
+    FROM services_weekly
+    GROUP BY service
+)
+SELECT
+    pm.service,
+    pm.total_patients,
+    pm.avg_age,
+    pm.avg_satisfaction,
+    sm.total_staff,
+    wm.total_admitted,
+    wm.total_refused,
+    ROUND(100.0 * wm.total_admitted /
+          (wm.total_admitted + wm.total_refused), 2) AS admission_rate
+FROM patient_metrics pm
+LEFT JOIN staff_metrics sm ON pm.service = sm.service
+LEFT JOIN weekly_metrics wm ON pm.service = wm.service
+ORDER BY pm.avg_satisfaction DESC;
+
+-- Build a CTE for staff utilization and join it with patient data.
+WITH staff_counts AS (
+    SELECT s.service, COUNT(s.staff_id) AS staff_count
+    FROM staff s GROUP BY s.service
+),
+patient_counts AS (
+    SELECT p.service, COUNT(p.patient_id) AS patient_count
+    FROM patients p GROUP BY p.service
+)
+SELECT sc.service, sc.staff_count, pc.patient_count,
+    CASE 
+        WHEN sc.staff_count = 0 THEN NULL
+        ELSE CAST(pc.patient_count AS FLOAT) / sc.staff_count
+    END AS patients_per_staff
+FROM staff_counts sc
+JOIN patient_counts pc ON sc.service = pc.service
+ORDER BY sc.service;
+
+-- Daily Challenge
+-- (Create a comprehensive hospital performance dashboard using CTEs. Calculate: 
+1) Service-level metrics (total admissions, refusals, avg satisfaction),
+2) Staff metrics per service (total staff, avg weeks present), 3) Patient demographics per service (avg age, count). 
+Then combine all three CTEs to create a final report showing service name, all calculated metrics,
+and an overall performance score (weighted average of admission rate and satisfaction). Order by performance score descending.)
+
+WITH service_metrics AS (
+    SELECT service,SUM(patients_admitted) AS total_admissions,AVG(patient_satisfaction) AS avg_satisfaction,AVG(available_beds) AS avg_beds,
+        AVG(staff_morale) AS avg_morale FROM services_weekly GROUP BY service
+),
+staff_metrics AS (
+    SELECT service,COUNT(DISTINCT staff_id) AS total_staff,AVG(CASE WHEN present = 'yes' THEN 1 ELSE 0 END) AS avg_weeks_present_ratio
+    FROM staff_schedule GROUP BY service
+),
+patient_demographics AS (
+    SELECT service,COUNT(patient_id) AS patient_count,AVG(age) AS avg_age
+    FROM patients GROUP BY service
+),
+final_report AS (
+    SELECT sm.service, sm.total_admissions,sm.avg_satisfaction,sm.avg_beds,sm.avg_morale,st.total_staff,st.avg_weeks_present_ratio,
+        pd.patient_count,pd.avg_age,
+        round(((CAST(sm.total_admissions AS FLOAT) / NULLIF(pd.patient_count, 0)) * 0.6+ sm.avg_satisfaction * 0.4),2) AS performance_score
+    FROM service_metrics sm
+    JOIN staff_metrics st ON sm.service = st.service
+    JOIN patient_demographics pd ON sm.service = pd.service
+)
+SELECT *
+FROM final_report
+ORDER BY performance_score DESC;
